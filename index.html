@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Simple Bookmark Manager</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body data-spy="scroll" data-target="#tag-nav">
+    <div class="container">
+      <div class="row">
+        <!-- Tag Navigation -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Filter bookmarks">
+          </div>
+          <ul class="nav nav-pills nav-stacked">
+            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Tag 1</a></li>
+            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span> Tag 2</a></li>
+            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Tag 3</a></li>
+          </ul>
+
+          <hr />
+
+          <p class="center">
+            <a href="#">Show All</a> | <a href="#">Show None</a> | <a href="#">Source</a>
+          </p>
+        </div>
+
+        <!-- Bookmark list -->
+        <div class="col-md-9">
+
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <span class="pull-left">
+                <img src="http://jsfiddle.net/favicon.ico" height="16" /> Website Title
+              </span>
+              <span class="pull-right">
+                <i>User Description</i>
+              </span>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <span class="pull-left">
+                <img src="http://jsfiddle.net/favicon.ico" height="16" /> Website Title
+              </span>
+              <span class="pull-right">
+                <i>User Description</i>
+              </span>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <span class="pull-left">
+                <img src="http://jsfiddle.net/favicon.ico" height="16" /> Website Title
+              </span>
+              <span class="pull-right">
+                <i>User Description</i>
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Javascript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  </body>
+</html>
