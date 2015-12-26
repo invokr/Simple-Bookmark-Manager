@@ -5,7 +5,7 @@
 ///
 
 libxml_use_internal_errors(true);
-$storage = array("id" => 0, "links" => array());
+$storage = array("id" => 1, "links" => array()); // Start at 1 to force a hashmap
 
 if (file_exists("./data/bookmarks.dat")) {
   $storage = unserialize(file_get_contents("./data/bookmarks.dat"));
@@ -35,15 +35,32 @@ $actions['add'] = function() {
 };
 
 $actions['modify'] = function() {
-
+  // @todo: implement
 };
 
 $actions['delete'] = function() {
+  global $storage;
+    $id = pparam('id', -1);
 
+    if ($id === -1) {
+      return_result("4", "Unkown link ID specified");
+    } elseif (array_key_exists($id, $storage['links'])) {
+      unset($storage['links'][$id]);
+      return_result("0", "");
+    }
 };
 
 $actions['list'] = function() {
+  global $storage;
+  $id = pparam('id', -1);
 
+  if ($id === -1) {
+    return_result("0", $storage['links']);
+  } elseif (array_key_exists($id, $storage['links'])) {
+    return_result("0", $storage['links'][$id]);
+  } else {
+    return_result("3", "Unkown link ID requested");
+  }
 };
 
 ///
@@ -71,6 +88,7 @@ function fill_data($id) {
   $doc->loadHTML(utf8_encode(file_get_contents($storage["links"][$id]["link"])));
   $xml = simplexml_import_dom($doc);
 
+  // @todo: cache favicon
   $storage["links"][$id]["favicon"] = $xml->xpath('//link[@rel="shortcut icon"]')[0]['href']->asXML(); // favicon
   $storage["links"][$id]["title"] = (string)$xml->xpath('//title')[0]; // title
 }
