@@ -14,10 +14,7 @@
           <div class="form-group">
             <input type="text" class="form-control" placeholder="Filter bookmarks">
           </div>
-          <ul class="nav nav-pills nav-stacked">
-            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Tag 1</a></li>
-            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span> Tag 2</a></li>
-            <li role="presentation"><a href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Tag 3</a></li>
+          <ul class="nav nav-pills nav-stacked" id="tags">
           </ul>
 
           <hr />
@@ -28,7 +25,7 @@
         </div>
 
         <!-- Bookmark list -->
-        <div class="col-md-9">
+        <div class="col-md-9" id="bookmarklist">
 
           <!-- Add a new Bookmark -->
           <div id="n" class="panel panel-default">
@@ -48,28 +45,6 @@
               </form>
             </div>
           </div>
-
-          <!-- Existing bookmarks -->
-
-          <div class="panel panel-default link">
-            <div class="panel-body general">
-              <span class="pull-left">
-                <img src="http://jsfiddle.net/favicon.ico" height="16" /> <span class="web_title">Website Title</span>
-              </span>
-              <span class="pull-right">
-                <i>User Description</i>
-              </span>
-            </div>
-            <div class="panel-body detail">
-              <span class="pull-left">
-                <img src="http://jsfiddle.net/favicon.ico" height="16" /> <a href="#">http://www.mywebsitehere.com/mycontent/something</a> <span class="label label-default">Tag 1</span>
-              </span>
-              <span class="pull-right">
-                <a href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <a href="#"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
-              </span>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -78,14 +53,251 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" integrity="sha384-6ePHh72Rl3hKio4HiJ841psfsRJveeS+aLoaEf3BWfS+gTF0XdAqku2ka8VddikM" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/bootstrap-tokenfield.min.js" integrity="sha384-cTnJxgLYTf2Wg8ye7i/UD+Swawdw/wE0BjUk7HMK76d7AjhyNUTT43mHMhbUtzUF" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js" integrity="sha384-iiBFRfCTHSXi/mHNU8P2fMrhLgng6gJgQOaeIgzgg6ZNUQUDSR9P6zCey743eHIE" crossorigin="anonymous"></script>
+
+    <!-- Templates -->
+    <script id="tpl_tag" type="text/x-handlebars-template">
+      <li role="presentation"><a data-tag="{{hash}}" class="tag" href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> {{name}}</a></li>
+    </script>
+
+    <script id="tpl_link" type="text/x-handlebars-template">
+      <div class="panel panel-default link" id="link_{{id}}">
+        <div class="panel-body general {{raw_tags}}">
+          <span class="pull-left">
+            <img src="{{favicon}}" height="16" /> <span class="web_title">{{title}}</span>
+          </span>
+          <span class="pull-right">
+            <i>{{description}}</i>
+          </span>
+        </div>
+        <div class="panel-body detail">
+          <span class="pull-left">
+            <img src="{{favicon}}" height="16" /> <a href="{{link}}">{{link}}</a>  {{#each tags}} <span class="label label-default">{{this}}</span> {{/each}}
+          </span>
+          <span class="pull-right">
+            <a class="l_edit" data-id="{{id}}" href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <a href="#" class="l_delete" data-id="{{id}}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
+          </span>
+        </div>
+      </div>
+    </script>
 
     <!-- App -->
     <script>
       $(document).ready(function() {
-        // Make sure tag has the correct css class
+        // Add our tokenfield
         $('.tokenfield').tokenfield();
-        $('#n_tags-tokenfield').addClass("");
+
+        // Compile all templates
+        var tpl_tag = Handlebars.compile($("#tpl_tag").html());
+        var tpl_link = Handlebars.compile($("#tpl_link").html());
+
+        // Our list of tags
+        var tags = [];
+
+        // Pull all existing bookmarks
+        req("list", {}, function(data) {
+          for (var key in data) {
+            $("#bookmarklist").append(tpl_link({
+              id: key,
+              title: data[key].title,
+              description: data[key].description,
+              favicon: data[key].favicon,
+              link: data[key].link,
+              tags: data[key].tags,
+              raw_tags: tag_classes(data[key].tags)
+            }));
+
+            for (var i = 0, t = data[key].tags.length; i < t; i++) {
+              tags.push(data[key].tags[i]);
+            }
+          }
+
+          // Sort and filter double tags
+          tags = tags.filter(function(item, i, ar){ return ar.indexOf(item) === i; }).sort();
+
+          // Append tags to our taglist
+          for (var i = 0, l = tags.length; i < l; i++) {
+            $("#tags").append(tpl_tag({
+              name: tags[i],
+              hash: "tag_"+sha1(tags[i])
+            }));
+          }
+        });
       });
+
+      // Protocol helper
+      function req(action, data, callback) {
+        $.ajax({
+          method: "POST",
+          url: "manager.php?action="+action,
+          data: data,
+          dataType: "json"
+        }).done(function( msg ) {
+          if (msg.status != 0) {
+            alert("Error: "+msg.data);
+          } else {
+            callback(msg.data);
+          }
+        });
+      }
+
+      // Return list of raw tag classes
+      function tag_classes(tags) {
+        var ret = "";
+
+        for (var i = 0, t = tags.length; i < t; i++) {
+          ret += "tag_"+sha1(tags[i])+" ";
+        }
+
+        return ret;
+      }
+
+      // SHA-1 function, we use it to encode tags instead of stripping / replacing invalid chars
+      function sha1(str) {
+        //  discuss at: http://phpjs.org/functions/sha1/
+        // original by: Webtoolkit.info (http://www.webtoolkit.info/)
+        // improved by: Michael White (http://getsprink.com)
+        // improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        //    input by: Brett Zamir (http://brett-zamir.me)
+        //  depends on: utf8_encode
+        //   example 1: sha1('Kevin van Zonneveld');
+        //   returns 1: '54916d2e62f65b3afa6e192e6a601cdbe5cb5897'
+
+        var rotate_left = function(n, s) {
+          var t4 = (n << s) | (n >>> (32 - s));
+          return t4;
+        };
+
+        /*var lsb_hex = function (val) { // Not in use; needed?
+         var str="";
+         var i;
+         var vh;
+         var vl;
+
+         for ( i=0; i<=6; i+=2 ) {
+         vh = (val>>>(i*4+4))&0x0f;
+         vl = (val>>>(i*4))&0x0f;
+         str += vh.toString(16) + vl.toString(16);
+         }
+         return str;
+         };*/
+
+        var cvt_hex = function(val) {
+          var str = '';
+          var i;
+          var v;
+
+          for (i = 7; i >= 0; i--) {
+            v = (val >>> (i * 4)) & 0x0f;
+            str += v.toString(16);
+          }
+          return str;
+        };
+
+        var blockstart;
+        var i, j;
+        var W = new Array(80);
+        var H0 = 0x67452301;
+        var H1 = 0xEFCDAB89;
+        var H2 = 0x98BADCFE;
+        var H3 = 0x10325476;
+        var H4 = 0xC3D2E1F0;
+        var A, B, C, D, E;
+        var temp;
+
+        var str_len = str.length;
+
+        var word_array = [];
+        for (i = 0; i < str_len - 3; i += 4) {
+          j = str.charCodeAt(i) << 24 | str.charCodeAt(i + 1) << 16 | str.charCodeAt(i + 2) << 8 | str.charCodeAt(i + 3);
+          word_array.push(j);
+        }
+
+        switch (str_len % 4) {
+          case 0:
+            i = 0x080000000;
+            break;
+          case 1:
+            i = str.charCodeAt(str_len - 1) << 24 | 0x0800000;
+            break;
+          case 2:
+            i = str.charCodeAt(str_len - 2) << 24 | str.charCodeAt(str_len - 1) << 16 | 0x08000;
+            break;
+          case 3:
+            i = str.charCodeAt(str_len - 3) << 24 | str.charCodeAt(str_len - 2) << 16 | str.charCodeAt(str_len - 1) <<
+                    8 | 0x80;
+            break;
+        }
+
+        word_array.push(i);
+
+        while ((word_array.length % 16) != 14) {
+          word_array.push(0);
+        }
+
+        word_array.push(str_len >>> 29);
+        word_array.push((str_len << 3) & 0x0ffffffff);
+
+        for (blockstart = 0; blockstart < word_array.length; blockstart += 16) {
+          for (i = 0; i < 16; i++) {
+            W[i] = word_array[blockstart + i];
+          }
+          for (i = 16; i <= 79; i++) {
+            W[i] = rotate_left(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
+          }
+
+          A = H0;
+          B = H1;
+          C = H2;
+          D = H3;
+          E = H4;
+
+          for (i = 0; i <= 19; i++) {
+            temp = (rotate_left(A, 5) + ((B & C) | (~B & D)) + E + W[i] + 0x5A827999) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+          }
+
+          for (i = 20; i <= 39; i++) {
+            temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+          }
+
+          for (i = 40; i <= 59; i++) {
+            temp = (rotate_left(A, 5) + ((B & C) | (B & D) | (C & D)) + E + W[i] + 0x8F1BBCDC) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+          }
+
+          for (i = 60; i <= 79; i++) {
+            temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & 0x0ffffffff;
+            E = D;
+            D = C;
+            C = rotate_left(B, 30);
+            B = A;
+            A = temp;
+          }
+
+          H0 = (H0 + A) & 0x0ffffffff;
+          H1 = (H1 + B) & 0x0ffffffff;
+          H2 = (H2 + C) & 0x0ffffffff;
+          H3 = (H3 + D) & 0x0ffffffff;
+          H4 = (H4 + E) & 0x0ffffffff;
+        }
+
+        temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
+        return temp.toLowerCase();
+      }
     </script>
   </body>
 </html>
