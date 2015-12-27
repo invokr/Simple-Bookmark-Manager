@@ -20,7 +20,7 @@
           <hr />
 
           <p class="center">
-            <a href="#">Show All</a> | <a href="#">Show None</a> | <a href="#">Source</a>
+            <a id="t_showall" href="#">Show All</a> | <a id="t_shownone" href="#">Show None</a> | <a href="#">Source</a>
           </p>
         </div>
 
@@ -118,10 +118,35 @@
         });
 
         // Fire on show-all
+        $("#t_showall").on('click', function() {
+          $(".link").css("display", "block");
+          $(".tag a span").removeClass("glyphicon-eye-close");
+          $(".tag a span").addClass("glyphicon-eye-open");
+        });
 
         // Fire on show-none
+        $("#t_shownone").on('click', function() {
+          $(".link").css("display", "none");
+          $(".tag a span").removeClass("glyphicon-eye-open");
+          $(".tag a span").addClass("glyphicon-eye-close");
+        });
 
         // Fire on tag-toggle
+        $(document).on('click', ".tag", function() {
+          var spanEle = $(this).find("a span");
+          var open = spanEle.hasClass("glyphicon-eye-open");
+          var tag = $(this).find("a").attr("data-tag");
+
+          if (open) {
+            spanEle.removeClass("glyphicon-eye-open");
+            spanEle.addClass("glyphicon-eye-close");
+            $("."+tag).parent().css("display", "none");
+          } else {
+            spanEle.removeClass("glyphicon-eye-close");
+            spanEle.addClass("glyphicon-eye-open");
+            $("."+tag).parent().css("display", "block");
+          }
+        });
 
         // Fire on filter
 
