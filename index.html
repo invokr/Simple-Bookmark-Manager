@@ -103,6 +103,10 @@
         });
 
         // Fire on discard
+        $("#btn_discard").on('click', function() {
+          $("#n_form")[0].reset();
+          $('.tokenfield').tokenfield('setTokens', ' ');
+        });
 
         // Fire on edit
 
