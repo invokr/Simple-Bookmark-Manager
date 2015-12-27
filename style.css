@@ -5,3 +5,45 @@
 .container {
     margin-top: 25px;
 }
+
+.panel-heading h3 {
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: normal;
+    width: 75%;
+    padding-top: 8px;
+}
+
+.link {
+    margin-bottom: 10px;
+}
+
+.link .web_title {
+    margin-left: 7px;
+}
+
+.link .panel-body {
+    padding: 10px;
+}
+
+.link .panel-body a {
+    margin: 0px 7px 0px 7px;
+}
+
+.link .detail {
+    display: none;
+}
+
+.link:hover .general {
+    display: none;
+}
+
+.link:hover .detail {
+    display: block;
+}
+
+#n .panel-body {
+    padding-bottom: 0px;
+}
