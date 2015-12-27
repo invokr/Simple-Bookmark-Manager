@@ -32,19 +32,20 @@
             <div class="panel-heading">
               <h3 class="panel-title pull-left">Add Link</h3>
               <div class="btn-group pull-right" role="group">
-                <button class="btn btn-default">Save</button>
-                <button class="btn btn-default">Discard</button>
+                <button id="btn_save" class="btn btn-default">Save</button>
+                <button id="btn_discard" class="btn btn-default">Discard</button>
               </div>
               <div class="clearfix"></div>
             </div>
             <div class="panel-body">
-              <form role="form">
-                <div class="form-group"> <input type="text" class="form-control" id="n_link" name="n_link" placeholder="Link" required> </div>
-                <div class="form-group"> <input type="text" class="form-control" id="n_description" name="n_description" placeholder="Description"> </div>
-                <div class="form-group"> <input type="text" class="form-control tokenfield" id="n_tags" name="n_tags" data-role="tagsinput" placeholder="Tags"> </div>
+              <form role="form" id="n_form">
+                <div class="form-group"> <input type="text" class="form-control" id="n_link" name="link" placeholder="Link" required> </div>
+                <div class="form-group"> <input type="text" class="form-control" id="n_description" name="description" placeholder="Description"> </div>
+                <div class="form-group"> <input type="text" class="form-control tokenfield" id="n_tags" name="tags" data-role="tagsinput" placeholder="Tags"> </div>
               </form>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -57,7 +58,7 @@
 
     <!-- Templates -->
     <script id="tpl_tag" type="text/x-handlebars-template">
-      <li role="presentation"><a data-tag="{{hash}}" class="tag" href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> {{name}}</a></li>
+      <li class="tag" role="presentation"><a data-tag="{{hash}}" href="#"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> {{name}}</a></li>
     </script>
 
     <script id="tpl_link" type="text/x-handlebars-template">
@@ -83,18 +84,52 @@
 
     <!-- App -->
     <script>
+      // Compile all templates
+      var tpl_tag = Handlebars.compile($("#tpl_tag").html());
+      var tpl_link = Handlebars.compile($("#tpl_link").html());
+
+      // Our list of tags
+      var tags = [];
+
       $(document).ready(function() {
         // Add our tokenfield
         $('.tokenfield').tokenfield();
 
-        // Compile all templates
-        var tpl_tag = Handlebars.compile($("#tpl_tag").html());
-        var tpl_link = Handlebars.compile($("#tpl_link").html());
+        // Fire on save
+        $("#btn_save").on('click', function() {
+          req("add", $("#n_form").serializeObject(), function(data) {
+            list();
+          });
+        });
 
-        // Our list of tags
-        var tags = [];
+        // Fire on discard
+
+        // Fire on edit
+
+        // Fire on delete
+        $(document).on('click', ".l_delete", function() {
+          req("delete", {id: $(this).attr("data-id")}, function(data) {
+            list();
+          });
+        });
+
+        // Fire on show-all
+
+        // Fire on show-none
+
+        // Fire on tag-toggle
+
+        // Fire on filter
 
         // Pull all existing bookmarks
+        list();
+      });
+
+      function list() {
+        // @todo: add links individually instead of clearing everything
+        $(".tag").remove();
+        $(".link").remove();
+
         req("list", {}, function(data) {
           for (var key in data) {
             $("#bookmarklist").append(tpl_link({
@@ -113,7 +148,8 @@
           }
 
           // Sort and filter double tags
-          tags = tags.filter(function(item, i, ar){ return ar.indexOf(item) === i; }).sort();
+          tags = tags.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+          tags.sort();
 
           // Append tags to our taglist
           for (var i = 0, l = tags.length; i < l; i++) {
@@ -123,7 +159,7 @@
             }));
           }
         });
-      });
+      }
 
       // Protocol helper
       function req(action, data, callback) {
@@ -298,6 +334,73 @@
         temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
         return temp.toLowerCase();
       }
+
+      (function($){
+        $.fn.serializeObject = function(){
+
+          var self = this,
+                  json = {},
+                  push_counters = {},
+                  patterns = {
+                    "validate": /^[a-zA-Z][a-zA-Z0-9_]*(?:\[(?:\d*|[a-zA-Z0-9_]+)\])*$/,
+                    "key":      /[a-zA-Z0-9_]+|(?=\[\])/g,
+                    "push":     /^$/,
+                    "fixed":    /^\d+$/,
+                    "named":    /^[a-zA-Z0-9_]+$/
+                  };
+
+
+          this.build = function(base, key, value){
+            base[key] = value;
+            return base;
+          };
+
+          this.push_counter = function(key){
+            if(push_counters[key] === undefined){
+              push_counters[key] = 0;
+            }
+            return push_counters[key]++;
+          };
+
+          $.each($(this).serializeArray(), function(){
+
+            // skip invalid keys
+            if(!patterns.validate.test(this.name)){
+              return;
+            }
+
+            var k,
+                    keys = this.name.match(patterns.key),
+                    merge = this.value,
+                    reverse_key = this.name;
+
+            while((k = keys.pop()) !== undefined){
+
+              // adjust reverse_key
+              reverse_key = reverse_key.replace(new RegExp("\\[" + k + "\\]$"), '');
+
+              // push
+              if(k.match(patterns.push)){
+                merge = self.build([], self.push_counter(reverse_key), merge);
+              }
+
+              // fixed
+              else if(k.match(patterns.fixed)){
+                merge = self.build([], k, merge);
+              }
+
+              // named
+              else if(k.match(patterns.named)){
+                merge = self.build({}, k, merge);
+              }
+            }
+
+            json = $.extend(true, json, merge);
+          });
+
+          return json;
+        };
+      })(jQuery);
     </script>
   </body>
 </html>
