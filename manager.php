@@ -22,9 +22,9 @@ $actions['add'] = function() {
   $id = id();
 
   $storage["links"][$id] = array(
-    "link" => pparam('link', 'http://www.google.com/'), // @todo make sure this is always set
+    "link" => pparam('link', 'http://stackoverflow.com/questions/1184624/convert-form-data-to-javascript-object-with-jquery'), // @todo make sure this is always set
     "description" => pparam('description', ''),
-    "tags" => pparam('tags', array()),
+    "tags" => explode(", ", pparam('tags', "")),
   );
 
   // Fills title and favicon
@@ -40,14 +40,14 @@ $actions['modify'] = function() {
 
 $actions['delete'] = function() {
   global $storage;
-    $id = pparam('id', -1);
+  $id = pparam('id', -1);
 
-    if ($id === -1) {
-      return_result("4", "Unkown link ID specified");
-    } elseif (array_key_exists($id, $storage['links'])) {
-      unset($storage['links'][$id]);
-      return_result("0", "");
-    }
+  if ($id === -1) {
+    return_result("4", "Unkown link ID specified");
+  } elseif (array_key_exists($id, $storage['links'])) {
+    unset($storage['links'][$id]);
+    return_result("0", "");
+  }
 };
 
 $actions['list'] = function() {
@@ -91,16 +91,20 @@ function fill_data($id) {
   // @todo: cache favicon
   $fav = $xml->xpath('//link[@rel="shortcut icon"]')[0]['href'][0]->__toString(); // favicon
 
-  if ($fav.substr(0, 4) != "http") {
-    $data = parse_url($storage["links"][$id]["link"]);
-
-    if ($fav[0] == '/') {
-      // absolute path
-      $fav = $data["scheme"]."://".$data["host"].$fav;
+  if (substr($fav, 0, 4) != "http") {
+    if (substr($fav, 0, 2) == "//") {
+      $fav = "http:".$fav;
     } else {
-      // relative path
-      $fav = $data["scheme"]."://".$data["host"]."?".$data["argument"].$fav;
-    }
+      $data = parse_url($storage["links"][$id]["link"]);
+
+      if ($fav[0] == '/') {
+        // absolute path
+        $fav = $data["scheme"]."://".$data["host"].$fav;
+      } else {
+        // relative path
+        $fav = $data["scheme"]."://".$data["host"]."?".$data["argument"].$fav;
+      }
+     }
   }
 
   $storage["links"][$id]["favicon"] = $fav;
