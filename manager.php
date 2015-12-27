@@ -89,23 +89,33 @@ function fill_data($id) {
   $xml = simplexml_import_dom($doc);
 
   // @todo: cache favicon
-  $fav = $xml->xpath('//link[@rel="shortcut icon"]')[0]['href'][0]->__toString(); // favicon
+  $fav = "";
+  $t_fav1 = $xml->xpath('//link[@rel="icon"]');
+  $t_fav2 = $xml->xpath('//link[@rel="shortcut icon"]');
 
-  if (substr($fav, 0, 4) != "http") {
-    if (substr($fav, 0, 2) == "//") {
-      $fav = "http:".$fav;
-    } else {
-      $data = parse_url($storage["links"][$id]["link"]);
-
-      if ($fav[0] == '/') {
-        // absolute path
-        $fav = $data["scheme"]."://".$data["host"].$fav;
-      } else {
-        // relative path
-        $fav = $data["scheme"]."://".$data["host"]."?".$data["argument"].$fav;
-      }
-     }
+  if (count($t_fav1)) {
+    $fav = $t_fav1[0]['href'][0]->__toString();
+  } else if (count($t_fav2)) {
+    $fav = $t_fav2[0]['href'][0]->__toString();
   }
+
+  if ($fav) {
+    if (substr($fav, 0, 4) != "http") {
+      if (substr($fav, 0, 2) == "//") {
+        $fav = "http:".$fav;
+      } else {
+        $data = parse_url($storage["links"][$id]["link"]);
+
+        if ($fav[0] == '/') {
+          // absolute path
+          $fav = $data["scheme"]."://".$data["host"].$fav;
+        } else {
+          // relative path
+          $fav = $data["scheme"]."://".$data["host"]."?".$data["argument"].$fav;
+        }
+       }
+    }
+   }
 
   $storage["links"][$id]["favicon"] = $fav;
   $storage["links"][$id]["title"] = (string)$xml->xpath('//title')[0]; // title
