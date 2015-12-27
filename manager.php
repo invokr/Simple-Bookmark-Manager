@@ -89,7 +89,21 @@ function fill_data($id) {
   $xml = simplexml_import_dom($doc);
 
   // @todo: cache favicon
-  $storage["links"][$id]["favicon"] = $xml->xpath('//link[@rel="shortcut icon"]')[0]['href']->asXML(); // favicon
+  $fav = $xml->xpath('//link[@rel="shortcut icon"]')[0]['href'][0]->__toString(); // favicon
+
+  if ($fav.substr(0, 4) != "http") {
+    $data = parse_url($storage["links"][$id]["link"]);
+
+    if ($fav[0] == '/') {
+      // absolute path
+      $fav = $data["scheme"]."://".$data["host"].$fav;
+    } else {
+      // relative path
+      $fav = $data["scheme"]."://".$data["host"]."?".$data["argument"].$fav;
+    }
+  }
+
+  $storage["links"][$id]["favicon"] = $fav;
   $storage["links"][$id]["title"] = (string)$xml->xpath('//title')[0]; // title
 }
 
