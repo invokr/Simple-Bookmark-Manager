@@ -1,5 +1,7 @@
 <?php
 
+// Simple Bookmark Manager, https://github.com/invokr/Simple-Bookmark-Manager
+
 ///
 /// Load bookmark storage
 ///
@@ -22,7 +24,7 @@ $actions['add'] = function() {
   $id = id();
 
   $storage["links"][$id] = array(
-    "link" => pparam('link', 'http://stackoverflow.com/questions/1184624/convert-form-data-to-javascript-object-with-jquery'), // @todo make sure this is always set
+    "link" => pparam('link', ''),
     "description" => pparam('description', ''),
     "tags" => explode(", ", pparam('tags', "")),
     "id" => $id
@@ -107,7 +109,6 @@ function fill_data($id) {
   $doc->loadHTML(utf8_encode(file_get_contents($storage["links"][$id]["link"])));
   $xml = simplexml_import_dom($doc);
 
-  // @todo: cache favicon
   $fav = "";
   $t_fav1 = $xml->xpath('//link[@rel="icon"]');
   $t_fav2 = $xml->xpath('//link[@rel="shortcut icon"]');
