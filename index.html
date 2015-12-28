@@ -276,7 +276,11 @@
       // Trim for given length
       Handlebars.registerHelper('trimString', function(str, len) {
         var theString = str.substring(0, len);
-        return new Handlebars.SafeString(theString + "...");
+        if (str.length > len) {
+          return new Handlebars.SafeString(theString + "...");
+        } else {
+          return new Handlebars.SafeString(theString);
+        }
       });
 
       // SHA-1 function, we use it to encode tags instead of stripping / replacing invalid chars
