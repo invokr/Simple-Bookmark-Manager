@@ -30,6 +30,11 @@ $actions['add'] = function() {
   // Fills title and favicon
   fill_data($id);
 
+  // Sort, @todo: check performance for many bookmarks
+  usort($storage["links"], function($a, $b) {
+    return $a['title'] > $b['title'];
+  });
+
   // Return result
   return_result("0", $id);
 };
