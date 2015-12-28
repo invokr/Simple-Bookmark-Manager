@@ -91,24 +91,57 @@
       // Our list of tags
       var tags = [];
 
+      // Current id if we are editing
+      var eid = 0;
+
       $(document).ready(function() {
         // Add our tokenfield
         $('.tokenfield').tokenfield();
 
         // Fire on save
         $("#btn_save").on('click', function() {
-          req("add", $("#n_form").serializeObject(), function(data) {
-            list();
-          });
+          if (eid == 0) {
+            req("add", $("#n_form").serializeObject(), function (data) {
+              list();
+              $("#n_form")[0].reset();
+              $('.tokenfield').tokenfield('setTokens', ' ');
+            });
+          } else {
+            var obj = $("#n_form").serializeObject();
+            obj.id = eid;
+
+            req("modify", obj, function (data) {
+              console.log("here");
+              list();
+              $("#n_form")[0].reset();
+              $('.tokenfield').tokenfield('setTokens', ' ');
+              $('#n_link').prop('readonly', false);
+              eid = 0;
+            });
+          }
         });
+
+        // Fire on edit
+        //$('#inputId').prop('readonly', true);
 
         // Fire on discard
         $("#btn_discard").on('click', function() {
           $("#n_form")[0].reset();
           $('.tokenfield').tokenfield('setTokens', ' ');
+          eid = 0;
         });
 
         // Fire on edit
+        $(document).on('click', ".l_edit", function() {
+          eid = $(this).attr("data-id");
+          console.log(eid);
+          req("list", {id: $(this).attr("data-id")}, function(data) {
+            $("#n_link").val(data.link);
+            $("#n_description").val(data.description);
+            $('.tokenfield').tokenfield('setTokens', data.tags);
+            $('#n_link').prop('readonly', true);
+          });
+        });
 
         // Fire on delete
         $(document).on('click', ".l_delete", function() {
