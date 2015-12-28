@@ -209,6 +209,7 @@
         $(".link").remove();
 
         req("list", {}, function(data) {
+          tags = [];
           for (var key in data) {
             $("#bookmarklist").append(tpl_link({
               id: key,
