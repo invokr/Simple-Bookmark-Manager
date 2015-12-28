@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <title>Simple Bookmark Manager</title>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tokenfield/0.12.0/css/bootstrap-tokenfield.min.css" integrity="sha384-cu7JuHifKOiMVER1OSMjuBV/vATSBP7dazbyVra6gBV3yOUs4Ptus8PIUUvESwg2" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
@@ -31,14 +32,18 @@
           <div id="n" class="panel panel-default">
             <div class="panel-heading">
               <h3 class="panel-title pull-left">Add Link</h3>
-              <div class="btn-group pull-right" role="group">
+              <div class="btn-group pull-right" id="g1" role="group">
                 <button id="btn_save" class="btn btn-default">Save</button>
                 <button id="btn_discard" class="btn btn-default">Discard</button>
+                <button id="btn_hide" class="btn btn-default">Hide</button>
+              </div>
+              <div class="btn-group pull-right" id="g2" role="group">
+                <button id="btn_show" class="btn btn-default">Show</button>
               </div>
               <div class="clearfix"></div>
             </div>
             <div class="panel-body">
-              <form role="form" id="n_form">
+              <form role="form" id="n_form" autocomplete="off">
                 <div class="form-group"> <input type="text" class="form-control" id="n_link" name="link" placeholder="Link" required> </div>
                 <div class="form-group"> <input type="text" class="form-control" id="n_description" name="description" placeholder="Description"> </div>
                 <div class="form-group"> <input type="text" class="form-control tokenfield" id="n_tags" name="tags" data-role="tagsinput" placeholder="Tags"> </div>
@@ -73,7 +78,7 @@
         </div>
         <div class="panel-body detail">
           <span class="pull-left">
-            <img src="{{favicon}}" height="16" /> <a href="{{link}}">{{link}}</a>  {{#each tags}} <span class="label label-default">{{this}}</span> {{/each}}
+            <img src="{{favicon}}" height="16" /> <a href="{{link}}" target="_blank">{{link}}</a>  {{#each tags}} <span class="label label-default">{{this}}</span> {{/each}}
           </span>
           <span class="pull-right">
             <a class="l_edit" data-id="{{id}}" href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <a href="#" class="l_delete" data-id="{{id}}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
@@ -121,9 +126,6 @@
           }
         });
 
-        // Fire on edit
-        //$('#inputId').prop('readonly', true);
-
         // Fire on discard
         $("#btn_discard").on('click', function() {
           $("#n_form")[0].reset();
@@ -148,6 +150,20 @@
           req("delete", {id: $(this).attr("data-id")}, function(data) {
             list();
           });
+        });
+
+        // Fire on add show
+        $("#btn_show").on('click', function() {
+          $("#g1").css("display", "block");
+          $("#g2").css("display", "none");
+          $("#n .panel-body").css("display", "block");
+        });
+
+        // Fire on add hide
+        $("#btn_hide").on('click', function() {
+          $("#g1").css("display", "none");
+          $("#g2").css("display", "block");
+          $("#n .panel-body").css("display", "none");
         });
 
         // Fire on show-all
