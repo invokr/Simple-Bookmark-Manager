@@ -40,16 +40,25 @@ $actions['add'] = function() {
 };
 
 $actions['modify'] = function() {
-  // @todo: implement
+  global $storage;
+  $id = pparam('id', -1);
+
+  if ($id === -1 || !array_key_exists($id, $storage['links'])) {
+    return_result("4", "Unkown link ID specified");
+  } else {
+    $storage['links'][$id]['description'] = pparam('description', '');
+    $storage['links'][$id]['tags'] = explode(", ", pparam('tags', ""));
+    return_result("0", "");
+  }
 };
 
 $actions['delete'] = function() {
   global $storage;
   $id = pparam('id', -1);
 
-  if ($id === -1) {
+  if ($id === -1 || !array_key_exists($id, $storage['links'])) {
     return_result("4", "Unkown link ID specified");
-  } elseif (array_key_exists($id, $storage['links'])) {
+  } else {
     unset($storage['links'][$id]);
     return_result("0", "");
   }
