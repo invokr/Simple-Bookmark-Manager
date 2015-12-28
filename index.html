@@ -70,7 +70,7 @@
       <div class="panel panel-default link" id="link_{{id}}">
         <div class="panel-body general {{raw_tags}}">
           <span class="pull-left">
-            <img src="{{favicon}}" height="16" /> <span class="web_title">{{title}}</span>
+            <img src="{{favicon}}" height="16" /> <span class="web_title">{{trimString title 70}}</span>
           </span>
           <span class="pull-right">
             <i>{{description}}</i>
@@ -78,7 +78,7 @@
         </div>
         <div class="panel-body detail">
           <span class="pull-left">
-            <img src="{{favicon}}" height="16" /> <a href="{{link}}" target="_blank">{{link}}</a>  {{#each tags}} <span class="label label-default">{{this}}</span> {{/each}}
+            <img src="{{favicon}}" height="16" /> <a href="{{link}}" target="_blank">{{trimString link 50}}</a>  {{#each tags}} <span class="label label-default">{{this}}</span> {{/each}}
           </span>
           <span class="pull-right">
             <a class="l_edit" data-id="{{id}}" href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <a href="#" class="l_delete" data-id="{{id}}"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
@@ -211,6 +211,10 @@
         req("list", {}, function(data) {
           tags = [];
           for (var key in data) {
+            if (data[key].favicon == "") {
+              data[key].favicon = "favicon.ico";
+            }
+
             $("#bookmarklist").append(tpl_link({
               id: key,
               title: data[key].title,
@@ -266,6 +270,12 @@
 
         return ret;
       }
+
+      // Trim for given length
+      Handlebars.registerHelper('trimString', function(str, len) {
+        var theString = str.substring(0, len);
+        return new Handlebars.SafeString(theString + "...");
+      });
 
       // SHA-1 function, we use it to encode tags instead of stripping / replacing invalid chars
       function sha1(str) {
