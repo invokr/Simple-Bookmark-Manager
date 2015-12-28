@@ -213,6 +213,8 @@
           for (var key in data) {
             if (data[key].favicon == "") {
               data[key].favicon = "favicon.ico";
+            } else {
+              data[key].favicon = "cache/"+data[key].id+".ico";
             }
 
             $("#bookmarklist").append(tpl_link({

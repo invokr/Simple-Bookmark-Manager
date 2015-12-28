@@ -5,7 +5,7 @@
 ///
 
 libxml_use_internal_errors(true);
-$storage = array("id" => 1, "links" => array()); // Start at 1 to force a hashmap
+$storage = array("id" => 1, "links" => array()); // Start at 1
 
 if (file_exists("./data/bookmarks.dat")) {
   $storage = unserialize(file_get_contents("./data/bookmarks.dat"));
@@ -25,10 +25,15 @@ $actions['add'] = function() {
     "link" => pparam('link', 'http://stackoverflow.com/questions/1184624/convert-form-data-to-javascript-object-with-jquery'), // @todo make sure this is always set
     "description" => pparam('description', ''),
     "tags" => explode(", ", pparam('tags', "")),
+    "id" => $id
   );
 
   // Fills title and favicon
   fill_data($id);
+
+  if ($storage["links"][$id]['favicon'] != "") {
+    file_put_contents("cache/$id.ico", file_get_contents($storage["links"][$id]['favicon']));
+  }
 
   // Sort, @todo: check performance for many bookmarks
   usort($storage["links"], function($a, $b) {
